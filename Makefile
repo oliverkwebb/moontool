@@ -1,11 +1,9 @@
-
 #   Make instructions for moon tool
 
 PROG=	moontool
 CFILES= moontool.c
 OFILES= moontool.o
 LIBS=	-lm
-ICONS=	moon.icon colormoon.icon
 
 XPROG = xmoontool
 XCFILES = xmoontool.c icongeom.c
@@ -34,23 +32,9 @@ $(XPROG): $(XOFILES)
 	rm -f core
 	strip xmoontool
 
-moontool.o: $(ICONS) 
+moontool.o:
 
 clean:
 	rm -f $(PROG) $(XPROG)
 	rm -f *.o *.bak
 	rm -f core cscope.out *.shar
-
-manpage:
-	nroff -man moontool.1 | more
-
-xmanpage:
-	nroff -man xmoontool.1 | more
-
-lint:
-	lint $(CFILES) $(LIBS)
-
-shar:
-	shar -b -v $(SFILES) >$(PROG).shar
-	rm -f $(PROG).shar.gz
-	gzip $(PROG).shar
