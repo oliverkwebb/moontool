@@ -5,36 +5,17 @@ CFILES= moontool.c
 OFILES= moontool.o
 LIBS=	-lm
 
-XPROG = xmoontool
-XCFILES = xmoontool.c icongeom.c
-XOFILES = xmoontool.o icongeom.o
-XLIBS = -lm -lXol -lXt -lX11
-XPATHS = -I$$OPENWINHOME/include -L$$OPENWINHOME/lib
-XICONS = moon_icon
-
-SFILES= README moontool.1 xmoontool.1 Makefile \
-	$(CFILES) $(XCFILES) $(ICONS) $(XICONS)
-
-#CFLAGS= -O $(XPATHS)
-CFLAGS = -g $(XPATHS)
-#LDFLAGS= -O
+CFLAGS=-O2 -Wall -Wextra -Wpedantic
 LDFLAGS= -g
 
-all:	$(PROG) $(XPROG)
+all:	$(PROG)
 
-$(PROG): $(OFILES)
-	$(CC) $(LDFLAGS) -o $@ $(OFILES) $(LIBS)
-	rm -f core
-	strip moontool
-
-$(XPROG): $(XOFILES)
-	$(CC) $(LDFLAGS) -o $@ $(XOFILES) $(XLIBS)
-	rm -f core
-	strip xmoontool
-
-moontool.o:
+$(PROG): clean
+	$(CC) -lm -O2 -c astro.c
+	$(CC) moontool.c astro.o $(CFLAGS) -o $@ $(LIBS)
 
 clean:
-	rm -f $(PROG) $(XPROG)
-	rm -f *.o *.bak
-	rm -f core cscope.out *.shar
+	rm -f $(PROG) *.o
+
+tests: $(PROG)
+	./moontool.test

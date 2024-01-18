@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
+. testing.sh
+# testing "name" "command" "result" "infile" "stdin"
+CMDNAME="moontool"
+
+testing "5/11/1964" 'moontool -t $(date -u -d "5/11/1964" "+%s")' "New: 🌑 (1.2%)\n" "" ""
+testing "6/15/1981" 'moontool -t $(date -u -d "6/15/1981" "+%s")' "Waxing Gibbous: 🌔 (93.6%)\n" "" ""
+testing "1/11/2024" 'moontool -t $(date -u -d "1/11/2024" "+%s")' "New: 🌑 (0.4%)\n" "" ""
+testing "11/5/2061" 'moontool -t $(date -u -d "11/5/2061" "+%s")' "Waxing Gibbous: 🌔 (91.7%)\n" "" ""
+
+testing "-f" "moontool -f asd" "asd\n" "" ""
+testing "-f %%" 'moontool -f "%%"' "%\n" "" ""
+testing "-f %P" 'moontool -t $(date -u -d "1/11/2024" "+%s") -f "%P"' "0.4\n" "" ""
+testing "-f %e" 'moontool -t $(date -u -d "1/11/2024" "+%s") -f "%e"' "🌑\n" "" ""
+testing "-f %s new" 'moontool -t $(date -u -d "1/11/2024" "+%s") -f "%s"' "🌑\n" "" ""
+testing "-f %p" 'moontool -t $(date -u -d "1/11/2024" "+%s") -f "%p"' "New\n" "" ""
