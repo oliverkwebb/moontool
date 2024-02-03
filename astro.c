@@ -1,10 +1,5 @@
 /* A Moon for the Unix Machine, Release 3.0
 
- Make with:
- cc -O2 moontool.c -o moontool -lm
-
- This is a program which displays the current phase of the Moon.
-
     The algorithms used in this program to calculate the positions Sun and
     Moon as seen from the Earth are given in the book "Practical Astronomy
     With Your Calculator" by Peter Duffett-Smith, Second Edition,
@@ -34,34 +29,16 @@
 #include <math.h>
 
 /*  Astronomical constants  */
-#define epoch	      2444238.5	     /* 1980 January 0.0 */
 /*  Constants defining the Sun's apparent orbit  */
-#define elonge	    278.833540	   /* Ecliptic longitude of the Sun at epoch 1980.0 */
 #define elongp	    282.596403	   /* Ecliptic longitude of the Sun at perigee */
 #define eccent      0.016718       /* Eccentricity of Earth's orbit */
-/*  Elements of the Moon's orbit, epoch 1980.0  */
-#define mmlong      64.975464      /* Moon's mean lonigitude at the epoch */
-#define mmlongp     349.383063	   /* Mean longitude of the perigee at the epoch */
-#define mlnode	    151.950429	   /* Mean longitude of the node at the epoch */
-#define minc        5.145396       /* Inclination of the Moon's orbit */
-#define mecc        0.054900       /* Eccentricity of the Moon's orbit */
-#define msmax       384401.0       /* Semi-major axis of Moon's orbit in km */
-#define mparallax   0.9507	       /* Parallax at distance a from Earth */
-#define synmonth    29.53058868    /* Synodic month (new Moon to new Moon) */
-#define halfmonth   14.76529434    /* Half Synodic month (new Moon to full Moon) */
-#define lunatbase   2423436.0      /* Base date for E. W. Brown's numbered series of lunations (1923 January 16) */
-/*  Properties of the Earth  */
-#define earthrad    6378.16	       /* Radius of Earth in kilometres */
 
 #define PI 3.14159265358979323846  /* Assume not near black hole nor in Tennessee */
 
 /*  Handy mathematical functions  */
-#define sgn(x)      (((x) < 0) ? -1 : ((x) > 0 ? 1 : 0))	/* Extract sign */
 #define fixangle(a) ((a) - 360.0 * (floor((a) / 360.0)))  /* Fix angle	  */
 #define torad(d)    ((d) * (M_PI / 180.0))			          /* Deg->Rad	    */
 #define todeg(d)    ((d) * (180.0 / M_PI))			          /* Rad->Deg	    */
-#define dsin(x)     (sin(torad((x))))			                /* Sin from deg */
-#define dcos(x)     (cos(torad((x))))			                /* Cos from deg */
 
 #define resp *restrict
 #define dpr double *restrict
@@ -78,7 +55,6 @@ static double kepler(double m, double ecc)
 	} while (fabs (delta) > 1E-6); // 1E-6 Epsilon
 	return e;
 }
-
 
 /*
  * PHASE  --  Calculate phase of moon as a fraction:
@@ -101,8 +77,8 @@ double phase (double pdate, dpr pphase, dpr mage)
 	double	Day, M, Ec, Lambdasun, ml, MM, Ev, Ae, MmP, lP, MoonAge;
 
   /* Calculation of the Sun's position */
-	Day = pdate - epoch;			/* Date within epoch */
-	M = fixangle(fixangle((360 / 365.2422) * Day) + elonge - elongp);	/* Convert from perigee co-ordinates to epoch 1980.0 */
+	Day = pdate - 2444238.5;			/* Date within epoch (1/1/1980) */
+	M = fixangle(fixangle((360 / 365.2422) * Day) + 278.833540 - elongp);	/* Convert from perigee co-ordinates to epoch 1980.0 */
 	Ec = kepler(M, eccent); 		/* Solve equation of Kepler */
 	Ec = sqrt((1 + eccent) / (1 - eccent)) * tan(Ec / 2);
 	Ec = 2 * todeg(atan(Ec));		/* True anomaly */
@@ -111,10 +87,10 @@ double phase (double pdate, dpr pphase, dpr mage)
   /* Calculation of the Moon's position */
 
   /* Moon's mean longitude */
-	ml = fixangle(13.1763966 * Day + mmlong);
+	ml = fixangle(13.1763966 * Day + 64.975464); // 64.975464: Moons Mean longitude at epoch
 
   /* Moon's mean anomaly */
-	MM = fixangle(ml - 0.1114041 * Day - mmlongp);
+	MM = fixangle(ml - 0.1114041 * Day - 349.383063); /* Mean longitude of the perigee at the epoch */
 
 	/* Evection */
 	Ev = 1.2739 * sin(torad(2 * (ml - Lambdasun) - MM));
@@ -132,6 +108,6 @@ double phase (double pdate, dpr pphase, dpr mage)
 	MoonAge = (lP + (0.6583 * sin(torad(2 * (lP - Lambdasun))))) - Lambdasun;
 
 	*pphase = (1 - cos(torad(MoonAge))) / 2;
-	*mage = synmonth * (fixangle(MoonAge) / 360.0);
+	*mage = 29.53058868 * (fixangle(MoonAge) / 360.0); // 29.53058868: Synodic Month Length
 	return fixangle(MoonAge) / 360.0;
 }

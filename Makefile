@@ -1,18 +1,16 @@
-#   Make instructions for moon tool
-
+CC=gcc
 PROG=	moontool
 CFILES= moontool.c
 OFILES= moontool.o
 LIBS=	-lm
 
-CFLAGS=-O2 -Wall -Wextra -Wpedantic
+CFLAGS=-O2 -Wall -Wextra -Wpedantic --std=c99 -D_GNU_SOURCE
 LDFLAGS= -g
 
-all:	$(PROG)
+all: $(PROG)
 
-$(PROG): clean
-	$(CC) -lm -O2 -c astro.c
-	$(CC) moontool.c astro.o $(CFLAGS) -o $@ $(LIBS)
+$(PROG):
+	$(CC) moontool.c astro.c $(CFLAGS) -o $@ $(LIBS)
 
 clean:
 	rm -f $(PROG) *.o

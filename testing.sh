@@ -148,7 +148,7 @@ testcmd()
 {
   wrong_args "$@"
 
-  testing "${1:-$CMDNAME $2}" "\"$C\" $2" "$3" "$4" "$5"
+  testing "${1:-$CMDNAME $2}" "\"$CMDPATH\" $2" "$3" "$4" "$5"
 }
 
 # Simple implementation of "expect" written in shell.
