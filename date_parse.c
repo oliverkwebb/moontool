@@ -37,11 +37,13 @@ time_t date_parse(char *str)
   tzset();
 
   int fmtindx = 0;
-  struct tm tlm = {0};
+  struct tm tm;
+  memset(&tm, 0, sizeof(tm));
 
   char *vformats[] = {
     "%e-%b-%Y",
     "%e/%b/%y:%T %Z",
+    "%e/%m/%Y %H:%M",
     "%e/%m/%Y",
     "%e-%b-%y %r %Z",
     "%e-%b-%y %I:%M %p %Z",
@@ -75,6 +77,7 @@ time_t date_parse(char *str)
     "%a, %b %e %I:%M %p %y",
     "%b %e %r",
     "%b %e %I:%M %p",
+    "%e %b %Y %H:%M",
     "%e %b %Y",
     "%R",
     "%r %p",
@@ -82,11 +85,11 @@ time_t date_parse(char *str)
     NULL
   };
 
-  for (; !strptime(str, vformats[fmtindx], &tlm); fmtindx++)
+  for (; !strptime(str, vformats[fmtindx], &tm); fmtindx++)
     if (!vformats[fmtindx + 1])
       dprintf(2, "Unknown date format: `%s`\n", str), exit(5);
 
-  time_t t = mktime(&tlm) - timezone;
+  time_t t = mktime(&tm) - timezone;
 
   // Unixtime breaks without this
   if (!vformats[fmtindx + 1]) t += timezone;

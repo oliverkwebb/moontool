@@ -1,8 +1,5 @@
 /* A Moon for the Unix Machine, Release 3.0
 
- Make with:
- cc -O2 moontool.c -o moontool -lm
-
  This is a program which displays the current phase of the Moon.
 
     The algorithms used in this program to calculate the positions Sun and
@@ -23,12 +20,7 @@
 
 	John Walker
 	http://www.fourmilab.ch/
-
-    This  program is in the public domain: "Do what thou wilt shall be the
-    whole of the law".  I'd appreciate  receiving  any  bug  fixes  and/or
-    enhancements,  which  I'll  incorporate  in  future  versions  of  the
-    program.  Please leave the original attribution information intact	so
-    that credit and blame may be properly apportioned.
+       See LICENSE-Mprintf
 */
 
 #include <math.h>
@@ -49,9 +41,9 @@ char *phasenames[]  = { "New", "Waxing Crescent", "First Quarter", "Waxing Gibbo
 char *emojis[]      = {"🌑", "🌒", "🌓", "🌔", "🌕",  "🌖", "🌗", "🌘"};
 char *emojis_south[]= {"🌑", "🌘", "🌗", "🌖", "🌕",  "🌔", "🌓", "🌒"};
 
-#define HELPTXT "moontool [-h] [-t TIME] [-f FORMAT]"
+#define HELPTXT "mprintf [-h] [-t TIME] [-f FORMAT]"
 
-static long jdate();
+static long jdate(struct tm *t);
 
 /* JTIME --    Convert internal GMT date and time to astronomical Julian time (i.e. Julian date plus day fraction). double jtime (struct tm *t) */
 #define jtime(t) ((jdate (t) - 0.5) + (t->tm_sec + 60 * (t->tm_min + 60 * t->tm_hour)) / 86400.0)
@@ -111,7 +103,7 @@ int main (int argc, char **argv)
   //Option parsing
   for (int i = 0; (i = getopt (argc, argv, "ht:f:")) != -1; ) switch (i) {
     case 'h': puts(HELPTXT); exit(1);
-    case 't': now = atoi(optarg); break;
+    case 't': now = date_parse(optarg); break;
     case 'f': fmtstr = strdup(optarg); break;
     default: puts("Error: Unknown Option\n"HELPTXT); exit(1);
     }

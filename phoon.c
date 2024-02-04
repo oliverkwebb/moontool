@@ -23,7 +23,7 @@
 ** Copyright (C) 1986,1987,1988,1995 by Jef Poskanzer <jef@mail.acme.com>.
 ** All rights reserved.
 **
-** See LICENSE 
+** See LICENSE
 */
 
 #include <math.h>
@@ -101,7 +101,6 @@ static void putmoon(time_t t, int numlines)
   double mcap, yrad, xrad, y, xright, xleft;
   int colright, colleft;
 
-
   /* Figure out the phase. */
   jd = unix_to_julian(t);
   pctphase = phase(jd, &cphase, &aom);
@@ -134,25 +133,20 @@ static void putmoon(time_t t, int numlines)
       putchar(' ');
     for (; col <= colright; ++col)
       putchar(bg[lin][col]);
-    if (numlines <= 27) {
-      /* Output the end-of-line information, if any. */
-      if (lin == midlin - 2) {
-        fputs("\t ", stdout);
-        printf("%-16s", qlits[(int)(which[0] * 4.0 + 0.001)]);
-      }
-      else if (lin == midlin - 1) {
+    /* Output the end-of-line information, if any. */
+    if (lin == midlin - 2) {
+      fputs("\t ", stdout);
+      printf("%-16s", qlits[(int)(which[0] * 4.0 + 0.001)]);
+    } else if (lin == midlin - 1) {
         fputs("\t ", stdout);
         putseconds((int)((jd - phases[0]) * 86400));
-      }
-      else if (lin == midlin) {
+      } else if (lin == midlin) {
         fputs("\t ", stdout);
         printf("%-16s", nqlits[(int)(which[0] * 4.0 + 0.001)]);
-      }
-      else if (lin == midlin + 1) {
+      } else if (lin == midlin + 1) {
         fputs("\t ", stdout);
         putseconds((int)((phases[1] - jd) * 86400));
       }
-    }
 
     putchar('\n');
   }
@@ -163,23 +157,19 @@ static void putmoon(time_t t, int numlines)
 int main(int argc, char** argv)
 {
   time_t t;
-  char buf[100];
-  int numlines, argn;
-  char* usage = "usage:  %s  [-l <lines>]  [<date/time>]\n";
+  int numlines;
+  char* usage = "usage: %s [<date/time>]\n";
 
   /* Parge args. */
-  argn = 1;
   numlines = 23;
 
   /* Figure out what date and time to use. */
-  if (!(argc - argn)) {
+  if (!(argc - 1)) {
     /* No arguments present - use the current date and time. */
     t = time(0);
-  }
-  else if (argc - argn == 1) {
+  } else if (argc - 1 == 1) {
     t = date_parse(argv[1]);
-  }
-  else {
+  } else {
     /* Too many args! */
     fprintf(stderr, usage, argv[0]);
     exit(1);
