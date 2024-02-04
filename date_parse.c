@@ -3,26 +3,7 @@
 ** Copyright (c) 1995 by Jef Poskanzer <jef@mail.acme.com>.
 ** All rights reserved.
 **
-** Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions
-** are met:
-** 1. Redistributions of source code must retain the above copyright
-**    notice, this list of conditions and the following disclaimer.
-** 2. Redistributions in binary form must reproduce the above copyright
-**    notice, this list of conditions and the following disclaimer in the
-**    documentation and/or other materials provided with the distribution.
-**
-** THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-** ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-** ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-** FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-** DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-** OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-** HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-** LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-** OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-** SUCH DAMAGE.
+** See LICENSE
 
 ** For a while now I've been somewhat unhappy with the various
 ** date-parsing routines available - yacc-based, lex-based, ad-hoc.  Large
@@ -61,6 +42,7 @@ time_t date_parse(char *str)
   char *vformats[] = {
     "%e-%b-%Y",
     "%e/%b/%y:%T %Z",
+    "%e/%m/%Y",
     "%e-%b-%y %r %Z",
     "%e-%b-%y %I:%M %p %Z",
     "%e-%b-%y %r",
@@ -93,7 +75,7 @@ time_t date_parse(char *str)
     "%a, %b %e %I:%M %p %y",
     "%b %e %r",
     "%b %e %I:%M %p",
-    "%e %b %y",
+    "%e %b %Y",
     "%R",
     "%r %p",
     "%s",
@@ -102,9 +84,12 @@ time_t date_parse(char *str)
 
   for (; !strptime(str, vformats[fmtindx], &tlm); fmtindx++)
     if (!vformats[fmtindx + 1])
-      dprintf(2, "Unknown date format\n"), exit(5);
+      dprintf(2, "Unknown date format: `%s`\n", str), exit(5);
 
   time_t t = mktime(&tlm) - timezone;
+
+  // Unixtime breaks without this
+  if (!vformats[fmtindx + 1]) t += timezone;
 
   return t;
 }

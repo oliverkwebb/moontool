@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+# Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
+. testing.sh
+# testing "name" "command" "result" "infile" "stdin"
+CMDNAME="phoon" CMDPATH="./phoon"
+
+testcmd "5/11/1964" '11-may-1964  | cksum' "1598214882 252\n" "" ""
+testcmd "6/15/1981" '15-june-1981 | cksum' "2381218965 1054\n" "" ""
+testcmd "1/11/2024" '11-Jan-2024  | cksum' "1851658391 247\n" "" ""
+testcmd "10/3/2061" '3-Oct-2061   | cksum' "1869331566 912\n" "" ""
+
+testcmd "fmt fail" "abcdef 2>&1" "Unknown date format: \`abcdef\`\n" "" ""
+testcmd "fmt unixtime" "361411200 | cksum" "2381218965 1054\n" "" ""

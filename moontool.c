@@ -39,6 +39,7 @@
 #include <unistd.h>
 
 extern double phase(double pdate, double *restrict pphase, double *restrict mage);
+extern time_t date_parse(char *str);
 
 #define halfmonth   14.76529434    /* Half Synodic month (new Moon to full Moon) */
 

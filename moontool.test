@@ -5,7 +5,7 @@
 CMDNAME="moontool"
 CMDPATH="moontool"
 
-testcmd "5/11/1964" '-t $(date -u -d "5/11/1964" "+%s")' "New 🌑 (1.2%)\n" "" ""
+testcmd "5/11/1964" '-t "$(date -ud "11 May 1964" +%s)"' "New 🌑 (1.2%)\n" "" ""
 testcmd "6/15/1981" '-t $(date -u -d "6/15/1981" "+%s")' "Waxing Gibbous 🌔 (93.6%)\n" "" ""
 testcmd "1/11/2024" '-t $(date -u -d "1/11/2024" "+%s")' "New 🌑 (0.4%)\n" "" ""
 testcmd "11/5/2061" '-t $(date -u -d "11/5/2061" "+%s")' "Waxing Gibbous 🌔 (91.7%)\n" "" ""
