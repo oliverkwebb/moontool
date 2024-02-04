@@ -51,7 +51,7 @@
 #include <time.h>
 
 #include "astro.h"
-#include "date_parse.h"
+time_t date_parse(char *str);
 
 /* Global defines and declarations. */
 
@@ -69,6 +69,25 @@
 /* If you change the aspect ratio, the canned backgrounds won't work. */
 #define ASPECTRATIO 0.5
 
+static long jdate(struct tm *t);
+
+/* JTIME --    Convert internal GMT date and time to astronomical Julian time (i.e. Julian date plus day fraction). double jtime (struct tm *t) */
+#define jtime(t) ((jdate (t) - 0.5) + (t->tm_sec + 60 * (t->tm_min + 60 * t->tm_hour)) / 86400.0)
+
+// JDATE  --  Convert internal GMT date and time to Julian day and fraction.
+static long jdate(struct tm *t)
+{
+	long c, m, y;
+
+	y = t->tm_year + 1900;
+	m = t->tm_mon + 1;
+	if (m > 2) m -= 3;
+	else { m += 9; y--; }
+	c = y / 100L;		   /* Compute century */
+	y -= 100L * c;
+	return (t->tm_mday + (c * 146097L) / 4 + (y * 1461L) / 4 + (m * 153L + 2) / 5 + 1721119L);
+}
+
 static void putseconds(long secs) {
   long days, hours, minutes;
 
@@ -82,7 +101,7 @@ static void putseconds(long secs) {
   printf("%ld %2ld:%02ld:%02ld", days, hours, minutes, secs);
 }
 
-static void putmoon(time_t t, int numlines, char *atfiller) {
+static void putmoon(time_t t, int numlines) {
   static char background18[18][37] = {"             .----------.            ",
                                       "         .--'   o    .   `--.        ",
                                       "       .'@  @@@@@@ O   .   . `.      ",
@@ -121,25 +140,6 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
       "       `-.    ./ |  .   o     .-'      ",
       "          `--./   .       .--'         ",
       "              `----------'             "};
-  static char pumpkin19[19][39] = {"              @@@@@@@@@@@@             ",
-                                   "          @@@@@@@@@@@@@@@@@@@@         ",
-                                   "       @@@@@@@@@@@@@@@@@@@@@@@@@@      ",
-                                   "     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ",
-                                   "    @@@@        @@@@@@@@        @@@@   ",
-                                   "   @@@@@@      @@@@@@@@@@      @@@@@@  ",
-                                   "  @@@@@@@@    @@@@@@@@@@@@    @@@@@@@@ ",
-                                   " @@@@@@@@@@  @@@@@@  @@@@@@  @@@@@@@@@@",
-                                   " @@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@",
-                                   " @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@",
-                                   " @@@@@@@@@@@@@@@        @@@@@@@@@@@@@@@",
-                                   " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
-                                   "  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ",
-                                   "   @@@@@                @@      @@@@@  ",
-                                   "    @@@@@@                    @@@@@@   ",
-                                   "     @@@@@@@@              @@@@@@@@    ",
-                                   "       @@@@@@@@@        @@@@@@@@@      ",
-                                   "          @@@@@@@@@@@@@@@@@@@@         ",
-                                   "              @@@@@@@@@@@@             "};
   static char background21[21][43] = {
       "                .----------.               ",
       "           .---'   O   . .  `---.          ",
@@ -265,36 +265,6 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
       "              `-.          .         .     .-'             ",
       "                 `---.        .       .---'                ",
       "                      `--------------'                     "};
-  static char hubert29[29][59] = {
-      "                      .--------------.                     ",
-      "                 .---'  o        .    `---.                ",
-      "              .-'    .    O  .         .   `-.             ",
-      "           .-'     @@@@@@       .             `-.          ",
-      "         .'@@   @@@@@@@@@@@       @@@@@@@   .    `.        ",
-      "       .'@@@  @@@@@ ___====-_  _-====___ @         `.      ",
-      "      /@@@  o _--~~~#####//      \\\\#####~~~--_ O     \\     ",
-      "     /     _-~##########// (    ) \\\\##########~-_  .  \\    ",
-      "    /@  o -############//  :\\^^/:  \\\\############-  @@ \\   ",
-      "   /@@@ _~############//   (@::@)   \\\\############~_ @@ \\  ",
-      "  /@@@ ~#############((     \\\\//     ))#############~ @@ \\ ",
-      "  |@@ -###############\\\\    (oo)    //###############- @ | ",
-      " / @ -#################\\\\  / \"\" \\  //#################- . \\",
-      " |@ -###################\\\\/      \\//###################-  |",
-      " | _#/:##########/\\######(   /\\   )######/\\##########:\\#_ |",
-      " | :/ :#/\\#/\\#/\\/  \\#/\\##\\  :  :  /##/\\#/  \\/\\#/\\#/\\#: \\: |",
-      " \\ \"  :/  V  V  \"   V  \\#\\: :  : :/#/  V   \"  V  V  \\:  \" /",
-      "  | @ \"   \"  \"      \"   / : :  : : \\   \"      \"  \"   \"   | ",
-      "  \\ .  o       @  @@@@ (  : :  : :  )  @@  .           . / ",
-      "   \\      @@@    @@@@ __\\ : :  : : /__            o     /  ",
-      "    \\    @@@@@   @@\\@(vvv(VVV)(VVV)vvv)       .        /   ",
-      "     \\ o  @@@       \\ \\  /  __        .   .     .--.  /    ",
-      "      \\      .     . \\.-.---                   `--'  /     ",
-      "       `.             `-'      .                   .'      ",
-      "         `.    o     / | `           O     .     .'        ",
-      "           `-.      /  |        o             .-'          ",
-      "              `-.          .         .     .-'             ",
-      "                 `---.        .       .---'                ",
-      "                      `--------------'                     "};
   static char background32[32][65] = {
       "                         .--------------.                        ",
       "                   .----'  o        .    `----.                  ",
@@ -329,45 +299,24 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
       "                   `----.        .       .----'                  ",
       "                         `--------------'                        "};
 
-  static char qlits[4][16] = {
-      "New Moon +     ",
-      "First Quarter +",
-      "Full Moon +    ",
-      "Last Quarter + ",
-  };
-  static char nqlits[4][16] = {
-      "New Moon -     ",
-      "First Quarter -",
-      "Full Moon -    ",
-      "Last Quarter - ",
+  static char *pnames[4] = {
+      "New Moon",
+      "First Quarter",
+      "Full Moon",
+      "Last Quarter",
   };
 
-  struct tm *tmP;
-  double jd, pctphase, angphase, cphase, aom;
+  double jd, angphase, cphase, aom;
   double phases[2], which[2];
-  long clocknow;
-  int atflrlen, atflridx, lin, col, midlin;
+  int lin, col, midlin;
   double mcap, yrad, xrad, y, xright, xleft;
   int colright, colleft;
   char c;
 
-  /* Find the length of the atfiller string. */
-  atflrlen = strlen(atfiller);
-
   /* Figure out the phase. */
-  jd = unix_to_julian(t);
-  pctphase = phase(jd, &cphase, &aom);
-  angphase = pctphase * 2.0 * PI;
+  jd = jdate(gmtime(&t));
+  angphase = phase(jd, &cphase, &aom) * 2.0 * PI;
   mcap = -cos(angphase);
-
-  /* Get now for use as a random number. */
-  (void)time(&clocknow);
-
-  /* Randomly cheat and generate Hubert. */
-  if (clocknow % 13 == 3 && cphase > 0.8) {
-    numlines = 29;
-    clocknow = 3;
-  }
 
   /* Figure out how big the moon is. */
   yrad = numlines / 2.0;
@@ -378,7 +327,6 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
   phasehunt2(jd, phases, which);
 
   /* Now output the moon, a slice at a time. */
-  atflridx = 0;
   for (lin = 0; lin < numlines; lin = lin + 1) {
     /* Compute the edges of this slice. */
     y = lin + 0.5 - yrad;
@@ -396,45 +344,20 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
       putchar(' ');
     for (; col <= colright; ++col) {
       switch (numlines) {
-      case 18:
-        c = background18[lin][col];
-        break;
-      case 19:
-        tmP = localtime(&t);
-        if (tmP->tm_mon == 9 && clocknow % (33 - tmP->tm_mday) == 1)
-          c = pumpkin19[lin][col];
-        else
-          c = background19[lin][col];
-        break;
-      case 21:
-        c = background21[lin][col];
-        break;
-      case 22:
-        c = background22[lin][col];
-        break;
-      case 23:
-        c = background23[lin][col];
-        break;
-      case 24:
-        c = background24[lin][col];
-        break;
-      case 29:
-        if (clocknow % 23 == 3)
-          c = hubert29[lin][col];
-        else
-          c = background29[lin][col];
-        break;
-      case 32:
-        c = background32[lin][col];
-        break;
-      default:
-        c = '@';
+      case 18: c = background18[lin][col]; break;
+      case 19: c = background19[lin][col]; break;
+      case 21: c = background21[lin][col]; break;
+      case 22: c = background22[lin][col]; break;
+      case 23: c = background23[lin][col]; break;
+      case 24: c = background24[lin][col]; break;
+      case 29: c = background29[lin][col]; break;
+      case 32: c = background32[lin][col]; break;
+      default: c = '@';
       }
       if (c != '@')
         putchar(c);
       else {
-        putchar(atfiller[atflridx]);
-        atflridx = (atflridx + 1) % atflrlen;
+        putchar('@');
       }
     }
 
@@ -442,13 +365,13 @@ static void putmoon(time_t t, int numlines, char *atfiller) {
       /* Output the end-of-line information, if any. */
       if (lin == midlin - 2) {
         fputs("\t ", stdout);
-        fputs(qlits[(int)(which[0] * 4.0 + 0.001)], stdout);
+        printf("%s +", pnames[(int)(which[0] * 4.0 + 0.001)]);
       } else if (lin == midlin - 1) {
         fputs("\t ", stdout);
         putseconds((int)((jd - phases[0]) * SECSPERDAY));
       } else if (lin == midlin) {
         fputs("\t ", stdout);
-        fputs(nqlits[(int)(which[1] * 4.0 + 0.001)], stdout);
+        printf("%s -", pnames[(int)(which[1] * 4.0 + 0.001)]);
       } else if (lin == midlin + 1) {
         fputs("\t ", stdout);
         putseconds((int)((phases[1] - jd) * SECSPERDAY));
@@ -506,22 +429,11 @@ int main(int argc, char **argv) {
       }
     }
     t = date_parse(buf);
-    if (t <= 0) {
-      fprintf(stderr, "illegal date/time: %s\n", buf);
-      exit(1);
-    }
   } else {
     /* Too many args! */
     fprintf(stderr, usage, argv[0]);
     exit(1);
   }
 
-  /* Pseudo-randomly decide what the moon is made of, and print it. */
-  if (t % 17 == 3)
-    putmoon(t, numlines, "GREENCHEESE");
-  else
-    putmoon(t, numlines, "@");
-
-  /* All done. */
-  exit(0);
+  putmoon(t, numlines);
 }

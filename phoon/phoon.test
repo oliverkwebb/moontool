@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+# Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
+. ../testing.sh
+# testing "name" "command" "result" "infile" "stdin"
+CMDNAME="phoon"
+CMDPATH="./phoon"
+
+testcmd "5/11/1964" '11-may-1964  | cksum' "2124535575 235\n" "" ""
+testcmd "6/15/1981" '15-june-1981 | cksum' "3197435478 1048\n" "" ""
+testcmd "1/11/2024" '11-jan-2024  | cksum' "2003804413 232\n" "" ""
+testcmd "10/3/2061" '3-oct-2061   | cksum' "1233933793 863\n" "" ""

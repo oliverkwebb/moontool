@@ -3,24 +3,20 @@
 BINDIR =	/usr/local/bin
 MANDIR =	/usr/local/man/man1
 
-DEFINES =	-DOS_BSD
-#DEFINES =	-DOS_SYSV
+DEFINES =	-D_GNU_SOURCE
 
 CC =		cc
-CFLAGS =	-O $(DEFINES) -ansi -pedantic -U__STRICT_ANSI__ -Wall -Wextra
-
-LDFLAGS =	-s
-
+CFLAGS =	-O -std=c99 $(DEFINES) -Wpedantic -Wall -Wextra
 
 all:		phoon
 
 phoon:		phoon.o date_parse.o astro.o
-	$(CC) $(LDFLAGS) -o phoon phoon.o date_parse.o astro.o -lm
+	$(CC) $(CFLAGS) -o phoon phoon.o date_parse.o astro.o -lm
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-date_parse.o:	date_parse.h
+date_parse.o:
 astro.o:	astro.h
 
 install:	all
@@ -31,3 +27,6 @@ install:	all
 
 clean:
 	rm -f phoon *.o a.out core
+
+test: phoon
+	./phoon.test
