@@ -11,7 +11,7 @@ CFLAGS =	-O -std=c99 $(DEFINES) -Wpedantic -Wall -Wextra
 all:		phoon
 
 phoon:		phoon.o date_parse.o astro.o
-	$(CC) $(CFLAGS) -o phoon phoon.o date_parse.o astro.o -lm
+	$(CC) $(CFLAGS) -o phoon phoon.o astro.o date_parse.o -lm
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<

@@ -316,84 +316,69 @@ kepler(double m, double ecc)
  * pphase:		Illuminated fraction
  * mage:		Age of moon in days
  */
-double
-phase(double pdate, double* pphase, double* mage)
+double phase( double pdate, double* pphase, double* mage)
 {
 
-  double Day, N, M, Ec, Lambdasun, ml, MM, MN, Ev, Ae, A3, MmP,
-      mEc, A4, lP, V, lPP, NP, y, x, Lambdamoon,
-      MoonAge, MoonPhase;
+	double	Day, N, M, Ec, Lambdasun, ml, MM, Ev, Ae, A3, MmP,
+		mEc, A4, lP, V, lPP, MoonAge, MoonPhase;
 
-  /* Calculation of the Sun's position */
+        /* Calculation of the Sun's position */
 
-  Day = pdate - epoch; /* Date within epoch */
-  N = fixangle((360 / 365.2422) * Day); /* Mean anomaly of the Sun */
-  M = fixangle(N + elonge - elongp); /* Convert from perigee
-                                     co-ordinates to epoch 1980.0 */
-  Ec = kepler(M, eccent); /* Solve equation of Kepler */
-  Ec = sqrt((1 + eccent) / (1 - eccent)) * tan(Ec / 2);
-  Ec = 2 * todeg(atan(Ec)); /* True anomaly */
-  Lambdasun = fixangle(Ec + elongp); /* Sun's geocentric ecliptic
-                                             longitude */
+	Day = pdate - epoch;			/* Date within epoch */
+	N = fixangle((360 / 365.2422) * Day);	/* Mean anomaly of the Sun */
+	M = fixangle(N + elonge - elongp);	/* Convert from perigee
+						co-ordinates to epoch 1980.0 */
+	Ec = kepler(M, eccent); 		/* Solve equation of Kepler */
+	Ec = sqrt((1 + eccent) / (1 - eccent)) * tan(Ec / 2);
+	Ec = 2 * todeg(atan(Ec));		/* True anomaly */
+        Lambdasun = fixangle(Ec + elongp);      /* Sun's geocentric ecliptic
+							longitude */
+	/* Orbital distance factor */
 
-  /* Calculation of the Moon's position */
 
-  /* Moon's mean longitude */
-  ml = fixangle(13.1763966 * Day + mmlong);
+        /* Calculation of the Moon's position */
 
-  /* Moon's mean anomaly */
-  MM = fixangle(ml - 0.1114041 * Day - mmlongp);
+        /* Moon's mean longitude */
+	ml = fixangle(13.1763966 * Day + mmlong);
 
-  /* Moon's ascending node mean longitude */
-  MN = fixangle(mlnode - 0.0529539 * Day);
+        /* Moon's mean anomaly */
+	MM = fixangle(ml - 0.1114041 * Day - mmlongp);
 
-  /* Evection */
-  Ev = 1.2739 * sin(torad(2 * (ml - Lambdasun) - MM));
+	/* Evection */
+	Ev = 1.2739 * sin(torad(2 * (ml - Lambdasun) - MM));
 
-  /* Annual equation */
-  Ae = 0.1858 * sin(torad(M));
+	/* Annual equation */
+	Ae = 0.1858 * sin(torad(M));
 
-  /* Correction term */
-  A3 = 0.37 * sin(torad(M));
+	/* Correction term */
+	A3 = 0.37 * sin(torad(M));
 
-  /* Corrected anomaly */
-  MmP = MM + Ev - Ae - A3;
+	/* Corrected anomaly */
+	MmP = MM + Ev - Ae - A3;
 
-  /* Correction for the equation of the centre */
-  mEc = 6.2886 * sin(torad(MmP));
+	/* Correction for the equation of the centre */
+	mEc = 6.2886 * sin(torad(MmP));
 
-  /* Another correction term */
-  A4 = 0.214 * sin(torad(2 * MmP));
+	/* Another correction term */
+	A4 = 0.214 * sin(torad(2 * MmP));
 
-  /* Corrected longitude */
-  lP = ml + Ev + mEc - Ae + A4;
+	/* Corrected longitude */
+	lP = ml + Ev + mEc - Ae + A4;
 
-  /* Variation */
-  V = 0.6583 * sin(torad(2 * (lP - Lambdasun)));
+	/* Variation */
+	V = 0.6583 * sin(torad(2 * (lP - Lambdasun)));
 
-  /* True longitude */
-  lPP = lP + V;
+	/* True longitude */
+	lPP = lP + V;
 
-  /* Corrected longitude of the node */
-  NP = MN - 0.16 * sin(torad(M));
+	/* Age of the Moon in degrees */
+	MoonAge = lPP - Lambdasun;
 
-  /* Y inclination coordinate */
-  y = sin(torad(lPP - NP)) * cos(torad(minc));
+	/* Phase of the Moon */
+	MoonPhase = (1 - cos(torad(MoonAge))) / 2;
 
-  /* X inclination coordinate */
-  x = cos(torad(lPP - NP));
 
-  /* Ecliptic longitude */
-  Lambdamoon = todeg(atan2(y, x));
-  Lambdamoon += NP;
-
-  /* Age of the Moon in degrees */
-  MoonAge = lPP - Lambdasun;
-
-  /* Phase of the Moon */
-  MoonPhase = (1 - cos(torad(MoonAge))) / 2;
-
-  *pphase = MoonPhase;
-  *mage = synmonth * (fixangle(MoonAge) / 360.0);
-  return fixangle(MoonAge) / 360.0;
+	*pphase = MoonPhase;
+	*mage = synmonth * (fixangle(MoonAge) / 360.0);
+	return fixangle(MoonAge) / 360.0;
 }
