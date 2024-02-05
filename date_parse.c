@@ -34,13 +34,11 @@ extern long timezone;
 
 time_t date_parse(char *str)
 {
-  tzset();
-
-  int fmtindx = 0;
+  int indx = 0;
   struct tm tm;
   memset(&tm, 0, sizeof(tm));
 
-  char *vformats[] = {
+  char *formats[] = {
     "%e-%b-%Y",
     "%e/%b/%y:%T %Z",
     "%e/%m/%Y %H:%M",
@@ -81,18 +79,16 @@ time_t date_parse(char *str)
     "%e %b %Y",
     "%R",
     "%r %p",
-    "%s",
     NULL
   };
 
-  for (; !strptime(str, vformats[fmtindx], &tm); fmtindx++)
-    if (!vformats[fmtindx + 1])
-      dprintf(2, "Unknown date format: `%s`\n", str), exit(5);
+  if (*str == '@')
+    return atol(str + 1);
 
-  time_t t = mktime(&tm) - timezone;
+  tzset();
+  for (; !strptime(str, formats[indx], &tm); indx++)
+    if (!formats[indx + 1])
+      dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
 
-  // Unixtime breaks without this
-  if (!vformats[fmtindx + 1]) t += timezone;
-
-  return t;
+  return mktime(&tm) - timezone;
 }

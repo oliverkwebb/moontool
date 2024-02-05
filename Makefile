@@ -18,7 +18,6 @@ TESTFILES = $(wildcard *.test)
 CC = cc
 Q = @
 
-
 all: ${APPS}
 
 full: clean all test

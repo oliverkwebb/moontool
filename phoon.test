@@ -10,4 +10,4 @@ testcmd "1/11/2024" '11-Jan-2024  | cksum' "1851658391 247\n" "" ""
 testcmd "10/3/2061" '3-Oct-2061   | cksum' "1869331566 912\n" "" ""
 
 testcmd "fmt fail" "abcdef 2>&1" "Unknown date format: \`abcdef\`\n" "" ""
-testcmd "fmt unixtime" "361411200 | cksum" "2381218965 1054\n" "" ""
+testcmd "fmt unixtime" "@361411200 | cksum" "2381218965 1054\n" "" ""
