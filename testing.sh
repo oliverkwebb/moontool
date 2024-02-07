@@ -99,12 +99,12 @@ testing()
 
   $ECHO "$3" > "$TESTDIR"/expected
   [ -n "$4" ] && $ECHO "$4" > input || rm -f input
-  $ECHO "$5" | ${EVAL:-eval --} "$2" > "$TESTDIR"/actual
+  $ECHO "$5" | ${EVAL:-eval} "$2" > "$TESTDIR"/actual
   RETVAL=$?
 
   # Catch segfaults
   [ $RETVAL -gt 128 ] &&
-    echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR"actual
+    echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR"/actual
   DIFF="$(cd "$TESTDIR" && diff -au${NOSPACE:+w} expected actual 2>&1)"
   [ -z "$DIFF" ] && do_pass || VERBOSE=all do_fail
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }

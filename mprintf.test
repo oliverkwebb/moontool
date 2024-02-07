@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
-. testing.sh
+. ./testing.sh
 # testing "name" "command" "result" "infile" "stdin"
 CMDNAME="mprintf"
 CMDPATH="./mprintf"

@@ -35,4 +35,4 @@ clean:
 test: ${APPS} ${TESTFILES}
 
 ${TESTFILES}: ${APPS} testing.sh
-	./$@
+	sh ./$@
