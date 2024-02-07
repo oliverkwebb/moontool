@@ -15,12 +15,11 @@ COMMON = astro.o date_parse.o
 TESTFILES = $(wildcard *.test)
 .PHONY: ${TESTFILES}
 
-CC = cc
 Q = @
 
 all: ${APPS}
 
-full: clean all test
+full: clean ${APPS} test
 
 ${APPS}: % : ${COMMON} %.o
 	$(Q)printf "CC %-12s -> $@\n" "$@.o"
@@ -33,7 +32,7 @@ ${APPS}: % : ${COMMON} %.o
 clean:
 	rm -f ${APPS} *.o a.out core
 
-test: ${TESTFILES}
+test: ${APPS} ${TESTFILES}
 
 ${TESTFILES}: ${APPS} testing.sh
 	./$@

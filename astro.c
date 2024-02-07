@@ -30,40 +30,22 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "astro.h"
-
 /*  Astronomical constants  */
 
 #define epoch 2444238.5 /* 1980 January 0.0 */
 
 /*  Constants defining the Sun's apparent orbit  */
 
-#define elonge 278.833540 /* Ecliptic longitude of the Sun \
-                             at epoch 1980.0 */
-#define elongp 282.596403 /* Ecliptic longitude of the Sun at \
-                             perigee */
+#define elonge 278.833540 /* Ecliptic longitude of the Sun at epoch 1980.0 */
+#define elongp 282.596403 /* Ecliptic longitude of the Sun at perigee */
 #define eccent 0.016718 /* Eccentricity of Earth's orbit */
 
 /*  Elements of the Moon's orbit, epoch 1980.0  */
 
-#define mmlong 64.975464 /* Moon's mean lonigitude at the epoch */
-#define mmlongp 349.383063 /* Mean longitude of the perigee at the \
-                              epoch */
-#define mlnode 151.950429 /* Mean longitude of the node at the \
-                             epoch */
-#define minc 5.145396 /* Inclination of the Moon's orbit */
 #define synmonth 29.53058868 /* Synodic month (new Moon to new Moon) */
-
-/*  Properties of the Earth  */
-
-#define earthrad 6378.16 /* Radius of Earth in kilometres */
-
-#define PI 3.14159265358979323846 /* Assume not near black hole nor in \
-                                     Tennessee */
 
 /*  Handy mathematical functions  */
 
-#define sgn(x) (((x) < 0) ? -1 : ((x) > 0 ? 1 : 0)) /* Extract sign */
 #define abs(x) ((x) < 0 ? (-(x)) : (x)) /* Absolute val */
 #define fixangle(a) ((a)-360.0 * (floor((a) / 360.0))) /* Fix angle	  */
 #define torad(d) ((d) * (M_PI / 180.0)) /* Deg->Rad	  */
@@ -77,7 +59,7 @@
  */
 
 static void
-jyear(double td, int* yy, int* mm, int* dd)
+jyear(double td, int *yy, int *mm, int *dd)
 {
   double j, d, y, m;
 
@@ -95,10 +77,10 @@ jyear(double td, int* yy, int* mm, int* dd)
   d = floor((d + 5.0) / 5.0);
   y = (100.0 * y) + j;
   if (m < 10.0)
-    m = m + 3;
+    m += 3;
   else {
-    m = m - 9;
-    y = y + 1;
+    m -= 9;
+    y++;
   }
   *yy = y;
   *mm = m;
@@ -117,19 +99,15 @@ jyear(double td, int* yy, int* mm, int* dd)
 static double
 meanphase(double sdate, double k)
 {
-  double t, t2, t3, nt1;
+  double t;
 
   /* Time in Julian centuries from 1900 January 0.5 */
   t = (sdate - 2415020.0) / 36525;
-  t2 = t * t; /* Square for frequent use */
-  t3 = t2 * t; /* Cube for frequent use */
 
-  nt1 = 2415020.75933 + synmonth * k
-      + 0.0001178 * t2
-      - 0.000000155 * t3
-      + 0.00033 * dsin(166.56 + 132.87 * t - 0.009173 * t2);
-
-  return nt1;
+  return 2415020.75933 + synmonth * k
+      + 0.0001178 * (t * t)
+      - 0.000000155 * (t * t * t)
+      + 0.00033 * dsin(166.56 + 132.87 * t - 0.009173 * (t * t));
 }
 
 /*
@@ -221,45 +199,33 @@ truephase(double k, double pha)
  * PHASEHUNT2  --  Find time of phases of the moon which surround
  *		the current date.  Two phases are found.
  */
-void phasehunt2(double sdate, double phases[2], double which[2])
+void phasehunt2(double sdate, double phases[2], int *which)
 {
-  double adate, k1, k2, nt1, nt2;
+  double adate = sdate - 45, k1, k2, nt1, nt2;
   int yy, mm, dd;
-
-  adate = sdate - 45;
 
   jyear(adate, &yy, &mm, &dd);
   k1 = floor((yy + ((mm - 1) * (1.0 / 12.0)) - 1900) * 12.3685);
 
-  adate = nt1 = meanphase(adate, k1);
-  while (1) {
+  for (adate = nt1 = meanphase(adate, k1);; nt1 = nt2, k1++) {
     adate += synmonth;
-    k2 = k1 + 1;
-    nt2 = meanphase(adate, k2);
+    nt2 = meanphase(adate, k2 = k1 + 1);
     if (nt1 <= sdate && nt2 > sdate)
       break;
-    nt1 = nt2;
-    k1 = k2;
   }
-  which[0] = 0.0;
-  which[1] = 0.25;
+  *which = 0;
   phases[0] = truephase(k1, 0.0);
   phases[1] = truephase(k1, 0.25);
   if (phases[1] <= sdate) {
-    which[0] = which[1];
-    which[1] = 0.5;
+    *which += 1;
     phases[0] = phases[1];
-    phases[1] = truephase(k1, 0.5);
-    if (phases[1] <= sdate) {
+    if ((phases[1] = truephase(k1, 0.5)) <= sdate) {
       phases[0] = phases[1];
-      phases[1] = truephase(k1, 0.75);
-      which[0] = which[1];
-      which[1] = 0.75;
-      if (phases[1] <= sdate) {
+      *which += 1;
+      if ((phases[1] = truephase(k1, 0.75)) <= sdate) {
         phases[0] = phases[1];
         phases[1] = truephase(k2, 0.0);
-        which[0] = which[1];
-        which[1] = 0.0;
+        *which += 1;
       }
     }
   }
@@ -271,14 +237,12 @@ void phasehunt2(double sdate, double phases[2], double which[2])
 static double
 kepler(double m, double ecc)
 {
-  double e, delta;
-#define EPSILON 1E-6
+  double e = m = torad(m), delta;
 
-  e = m = torad(m);
   do {
     delta = e - ecc * sin(e) - m;
     e -= delta / (1 - ecc * cos(e));
-  } while (abs(delta) > EPSILON);
+  } while (abs(delta) > 1E-6);
   return e;
 }
 
@@ -297,32 +261,25 @@ kepler(double m, double ecc)
  * pphase:		Illuminated fraction
  * mage:		Age of moon in days
  */
-double phase(double pdate, double* pphase, double* mage)
+double phase(double pdate, double *pphase, double *mage)
 {
-
-  double Day, N, M, Ec, Lambdasun, ml, MM, Ev, Ae, A3, MmP,
-      mEc, A4, lP, V, lPP, MoonAge, MoonPhase;
+  double Day, M, Ec, Lambdasun, ml, MM, Ev, Ae, MmP, lP, lPP, MoonAge;
 
   /* Calculation of the Sun's position */
 
   Day = pdate - epoch; /* Date within epoch */
-  N = fixangle((360 / 365.2422) * Day); /* Mean anomaly of the Sun */
-  M = fixangle(N + elonge - elongp); /* Convert from perigee
+  M = fixangle(fixangle((360 / 365.2422) * Day) + elonge - elongp); /* Convert from perigee
                                      co-ordinates to epoch 1980.0 */
   Ec = kepler(M, eccent); /* Solve equation of Kepler */
   Ec = sqrt((1 + eccent) / (1 - eccent)) * tan(Ec / 2);
   Ec = 2 * todeg(atan(Ec)); /* True anomaly */
-  Lambdasun = fixangle(Ec + elongp); /* Sun's geocentric ecliptic
-                                             longitude */
-  /* Orbital distance factor */
-
-  /* Calculation of the Moon's position */
+  Lambdasun = fixangle(Ec + elongp); /* Sun's geocentric ecliptic longitude */
 
   /* Moon's mean longitude */
-  ml = fixangle(13.1763966 * Day + mmlong);
+  ml = fixangle(13.1763966 * Day + 64.975464); /* Moon's mean lonigitude at the epoch */
 
   /* Moon's mean anomaly */
-  MM = fixangle(ml - 0.1114041 * Day - mmlongp);
+  MM = fixangle(ml - 0.1114041 * Day - 349.383063); /* 349:  Mean longitude of the perigee at the epoch */
 
   /* Evection */
   Ev = 1.2739 * sin(torad(2 * (ml - Lambdasun) - MM));
@@ -330,34 +287,19 @@ double phase(double pdate, double* pphase, double* mage)
   /* Annual equation */
   Ae = 0.1858 * sin(torad(M));
 
-  /* Correction term */
-  A3 = 0.37 * sin(torad(M));
-
   /* Corrected anomaly */
-  MmP = MM + Ev - Ae - A3;
-
-  /* Correction for the equation of the centre */
-  mEc = 6.2886 * sin(torad(MmP));
-
-  /* Another correction term */
-  A4 = 0.214 * sin(torad(2 * MmP));
+  MmP = MM + Ev - Ae - (0.37 * sin(torad(M)));
 
   /* Corrected longitude */
-  lP = ml + Ev + mEc - Ae + A4;
-
-  /* Variation */
-  V = 0.6583 * sin(torad(2 * (lP - Lambdasun)));
+  lP = ml + Ev + (6.2886 * sin(torad(MmP))) - Ae + (0.214 * sin(torad(2 * MmP)));
 
   /* True longitude */
-  lPP = lP + V;
+  lPP = lP + (0.6583 * sin(torad(2 * (lP - Lambdasun))));
 
   /* Age of the Moon in degrees */
   MoonAge = lPP - Lambdasun;
 
-  /* Phase of the Moon */
-  MoonPhase = (1 - cos(torad(MoonAge))) / 2;
-
-  *pphase = MoonPhase;
+  *pphase = (1 - cos(torad(MoonAge))) / 2;
   *mage = synmonth * (fixangle(MoonAge) / 360.0);
   return fixangle(MoonAge) / 360.0;
 }

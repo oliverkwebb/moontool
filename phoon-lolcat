@@ -1,0 +1,2 @@
+#!/bin/sh
+exec phoon $1 | lolcat -r -h 0.45

@@ -33,7 +33,8 @@
 #include <time.h>
 
 extern time_t date_parse(char* str);
-#include "astro.h"
+void phasehunt2(double sdate, double phases[2], int *which);
+double phase(double pdate, double *pphase, double *mage);
 
 #define unix_to_julian(t) ((double)t / 86400.0 + 2440587.4999996666666666666)
 
@@ -52,12 +53,14 @@ putseconds(long secs)
   minutes = secs / 60;
   secs -= minutes * 60;
 
-  printf("%ld %2ld:%02ld:%02ld", days, hours, minutes, secs);
+  printf("\t %ld %2ld:%02ld:%02ld", days, hours, minutes, secs);
 }
 
-static void putmoon(time_t t, int numlines)
+#define numlines 23
+
+static void putmoon(time_t t)
 {
-  static char bg[23][47] = {
+  static char *bg[] = {
     "                 .------------.                ",
     "             .--'  o     . .   `--.            ",
     "          .-'   .    O   .       . `-.         ",
@@ -82,29 +85,28 @@ static void putmoon(time_t t, int numlines)
     "             `--.       .      .--'            ",
     "                 `------------'                "
   };
-  static char qlits[4][16] = {
-    "New Moon +     ",
+  static char *qlits[] = {
+    "New Moon +",
     "First Quarter +",
-    "Full Moon +    ",
-    "Last Quarter + ",
+    "Full Moon +",
+    "Last Quarter +",
   };
-  static char nqlits[4][16] = {
-    "New Moon -     ",
+  static char *nqlits[] = {
+    "New Moon -",
     "First Quarter -",
-    "Full Moon -    ",
-    "Last Quarter - ",
+    "Full Moon -",
+    "Last Quarter -",
   };
 
-  double jd, pctphase, angphase, cphase, aom;
-  double phases[2], which[2];
-  int lin, col, midlin;
+  double jd, angphase, cphase, aom;
+  double phases[2];
+  int lin, col, midlin, which;
   double mcap, yrad, xrad, y, xright, xleft;
   int colright, colleft;
 
   /* Figure out the phase. */
   jd = unix_to_julian(t);
-  pctphase = phase(jd, &cphase, &aom);
-  angphase = pctphase * 2.0 * M_PI;
+  angphase = phase(jd, &cphase, &aom) * 2.0 * M_PI;
   mcap = -cos(angphase);
 
   /* Figure out how big the moon is. */
@@ -113,7 +115,7 @@ static void putmoon(time_t t, int numlines)
 
   /* Figure out some other random stuff. */
   midlin = numlines / 2;
-  phasehunt2(jd, phases, which);
+  phasehunt2(jd, phases, &which);
 
   /* Now output the moon, a slice at a time. */
   for (lin = 0; lin < numlines; lin = lin + 1) {
@@ -128,6 +130,7 @@ static void putmoon(time_t t, int numlines)
     colleft = (int)(xrad + 0.5) + (int)(xleft + 0.5);
     colright = (int)(xrad + 0.5) + (int)(xright + 0.5);
 
+
     /* Now output the slice. */
     for (col = 0; col < colleft; ++col)
       putchar(' ');
@@ -135,48 +138,26 @@ static void putmoon(time_t t, int numlines)
       putchar(bg[lin][col]);
     /* Output the end-of-line information, if any. */
     if (lin == midlin - 2) {
-      fputs("\t ", stdout);
-      printf("%-16s", qlits[(int)(which[0] * 4.0 + 0.001)]);
+      printf("\t %-16s", qlits[(int)(which + 0.001)]);
     } else if (lin == midlin - 1) {
-        fputs("\t ", stdout);
-        putseconds((int)((jd - phases[0]) * 86400));
+        putseconds((jd - phases[0]) * 86400);
       } else if (lin == midlin) {
-        fputs("\t ", stdout);
-        printf("%-16s", nqlits[(int)(which[0] * 4.0 + 0.001)]);
+        printf("\t %-16s", nqlits[(int)(which + 0.001)]);
       } else if (lin == midlin + 1) {
-        fputs("\t ", stdout);
-        putseconds((int)((phases[1] - jd) * 86400));
+        putseconds((phases[1] - jd) * 86400);
       }
 
     putchar('\n');
   }
 }
 
-/* Main program. */
-
 int main(int argc, char** argv)
 {
-  time_t t;
-  int numlines;
-  char* usage = "usage: %s [<date/time>]\n";
+  // long then = millitime();
+  setvbuf(stdout, NULL, _IOFBF, 0); // Speedup: Buffer Stdout Fully
 
-  /* Parge args. */
-  numlines = 23;
+  if (argc > 2) dprintf(2, "usage: %s [<date/time>]\n", argv[0]), exit(1);
 
-  /* Figure out what date and time to use. */
-  if (!(argc - 1)) {
-    /* No arguments present - use the current date and time. */
-    t = time(0);
-  } else if (argc - 1 == 1) {
-    t = date_parse(argv[1]);
-  } else {
-    /* Too many args! */
-    fprintf(stderr, usage, argv[0]);
-    exit(1);
-  }
-
-  putmoon(t, numlines);
-
-  /* All done. */
-  exit(0);
+  putmoon((argc > 1) ? date_parse(argv[1]) : time(0));
+  // printf("%ld\n", millitime()-then);
 }

@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Simple test harness infrastructure
 #
 # Copyright 2005 by Rob Landley
 
-# This file defines three main functions: "testing", "testcmd", and "txpect".
+# This file defines three main functions: "testing", "testcmd"
 
 # The following environment variables enable optional behavior in "testing":
 #    DEBUG - Show every command run by test script.
@@ -28,19 +28,17 @@
 #
 # The environment variable "FAILCOUNT" contains a cumulative total of the
 # number of failed tests.
-#
-# The environment variable "SKIP" says how many upcoming tests to skip,
-# defaulting to 0 and counting down when set to a higher number.
-#
-# Function "optional" enables/disables tests based on configuration options.
 
-export FAILCOUNT=0 SKIP=0
+ECHO="echo -n"
+[ -n "$BASH" ] && ECHO="echo -ne"
+
+export FAILCOUNT=0
 : "${SHOWPASS:=PASS}" "${SHOWFAIL:=FAIL}" "${SHOWSKIP:=SKIP}" "${TESTDIR:=$(mktemp -d)}"
 if tty -s <&1
 then
-  SHOWPASS="$(printf "\033[1;32m%s\033[0m" "${SHOWPASS}")"
-  SHOWFAIL="$(echo -e "\033[1;31m${SHOWFAIL}\033[0m")"
-  SHOWSKIP="$(echo -e "\033[1;33m${SHOWSKIP}\033[0m")"
+  SHOWPASS="$(printf "\033[1;32m%s\033[0m" "$SHOWPASS")"
+  SHOWFAIL="$(printf "\033[1;31m%s\033[0m" "$SHOWFAIL")"
+  SHOWSKIP="$(printf "\033[1;33m%s\033[0m" "$SHOWSKIP")"
 fi
 
 # Helper functions
@@ -48,7 +46,7 @@ fi
 # Check if VERBOSE= contains a given string. (This allows combining.)
 verbose_has()
 {
-  [ "${VERBOSE/$1/}" != "$VERBOSE" ]
+  [ "${VERBOSE#"$1"}" != "$VERBOSE" ]
 }
 
 wrong_args()
@@ -56,7 +54,9 @@ wrong_args()
   if [ $# -ne 5 ]
   then
     printf "%s\n" "Test $NAME has the wrong number of arguments ($# $*)" >&2
-    exit
+    return 1
+  else
+    return 0
   fi
 }
 
@@ -69,9 +69,9 @@ do_pass()
 # Announce failure and handle fallout for txpect
 do_fail()
 {
-  FAILCOUNT=$(($FAILCOUNT+1))
+  FAILCOUNT=$((FAILCOUNT+1))
   printf "%s\n" "$SHOWFAIL: $NAME"
-  if [ ! -z "$CASE" ]
+  if [ -n "$CASE" ]
   then
     echo "Expected '$CASE'"
     echo "Got '$A'"
@@ -81,57 +81,36 @@ do_fail()
 
 # Functions test files call directly
 
-# Set SKIP high if option not enabled in $OPTIONFLAGS (unless OPTIONFLAGS blank)
-optional()
-{
-  [ -n "$OPTIONFLAGS" ] && [ "$OPTIONFLAGS" == "${OPTIONFLAGS/:$1:/}" ] &&
-    SKIP=99999 || SKIP=0
-}
-
-# Evalute command line and skip next test when false
-skipnot()
-{
-  if verbose_has quiet
-  then
-    eval "$@" >/dev/null 2>&1
-  else
-    eval "$@"
-  fi
-  [ $? -eq 0 ] || { ((++SKIP)); return 1; }
-}
-
 # Takes five arguments: "name" "command" "result" "infile" "stdin"
 testing()
 {
-  wrong_args "$@"
+  wrong_args "$@" || { printf 'testing "name" "command" "result" "infile" "stdin"'; exit; }
 
   [ -z "$1" ] && NAME="$2" || NAME="$1"
-  [ "${NAME#$CMDNAME }" == "$NAME" ] && NAME="$CMDNAME $1"
+  [ "${NAME#"$CMDNAME "}" = "$NAME" ] && NAME="$CMDNAME $1"
 
   [ -n "$DEBUG" ] && set -x
 
-  if [ "$SKIP" -gt 0 ]
+  if [ -n "$SKIP" ]
   then
     verbose_has quiet || printf "%s\n" "$SHOWSKIP: $NAME"
-    ((--SKIP))
-
     return 0
   fi
 
-  echo -ne "$3" > "$TESTDIR"/expected
-  [ ! -z "$4" ] && echo -ne "$4" > input || rm -f input
-  echo -ne "$5" | ${EVAL:-eval --} "$2" > "$TESTDIR"/actual
+  $ECHO "$3" > "$TESTDIR"/expected
+  [ -n "$4" ] && $ECHO "$4" > input || rm -f input
+  $ECHO "$5" | ${EVAL:-eval --} "$2" > "$TESTDIR"/actual
   RETVAL=$?
 
   # Catch segfaults
   [ $RETVAL -gt 128 ] &&
-    echo "exited with signal (or returned $RETVAL)" >> actual
-  DIFF="$(cd "$TESTDIR"; diff -au${NOSPACE:+w} expected actual 2>&1)"
+    echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR"actual
+  DIFF="$(cd "$TESTDIR" && diff -au${NOSPACE:+w} expected actual 2>&1)"
   [ -z "$DIFF" ] && do_pass || VERBOSE=all do_fail
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }
   then
-    [ ! -z "$4" ] && printf "%s\n" "echo -ne \"$4\" > input"
-    printf "%s\n" "echo -ne '$5' |$EVAL $2"
+    [ -n "$4" ] && printf "%s\n" "$ECHO \"$4\" > input"
+    printf "%s\n" "$ECHO '$5' |$EVAL $2"
     [ -n "$DIFF" ] && printf "%s\n" "$DIFF"
   fi
 

@@ -1,94 +1,64 @@
-/* date_parse - parse string dates into internal form
-**
-** Copyright (c) 1995 by Jef Poskanzer <jef@mail.acme.com>.
-** All rights reserved.
-**
-** See LICENSE
-
-** For a while now I've been somewhat unhappy with the various
-** date-parsing routines available - yacc-based, lex-based, ad-hoc.  Large
-** code size and not very portable are the main complaints.  So I wrote a
-** new one that just does a bunch of sscanf's until one matches.  Slow,
-** but small and portable.  To figure out what formats to support I did a
-** survey of Date: lines in a bunch of Usenet articles.  The following
-** two formats accounted for more than 99% of all articles:
-**     DD mth YY HH:MM:SS ampm zone
-**     wdy, DD mth YY HH:MM:SS ampm zone
-** I added Unix ctime() format and a few others:
-**     wdy, mth DD HH:MM:SS ampm zone YY
-**     HH:MM:SS ampm zone DD mth YY
-**     DD mth YY
-**     HH:MM:SS ampm
-**     DD/mth/YYYY:HH:MM:SS zone  (httpd common log format date)
-** No-zone, no-seconds, and no-am/pm versions of each are also supported.
-** Note that dd/mm/yy and mm/dd/yy are NOT supported - those formats are
-** dumb.
-*/
+// date_parse - parse string dates into internal form
+//
+// See LICENSE
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-extern long timezone;
+static char *formats[] = {
+  // d/m/y format
+  "%d/%m/%Y %T",
+  "%d/%m/%Y",
+  // d-m-y format
+  "%d-%b-%Y %T",
+  "%d-%b-%Y",
+  // DD MM YY HH:MM:SS
+  "%d %b %Y %r",
+  "%d %b %Y %T",
+  "%d %b %Y %H:%M",
+  // ctime(3) format - zonename
+  "%a %b %d %T %Y",
+  NULL
+};
+
+static char *ifmts[] = {
+  "%r",
+  "%T",
+  "%H:%M",
+  "%b %d %T",
+  "%b %d",
+  NULL
+};
 
 time_t date_parse(char *str)
 {
-  int indx = 0;
-  struct tm tm;
-  memset(&tm, 0, sizeof(tm));
-
-  char *formats[] = {
-    "%e-%b-%Y",
-    "%e/%b/%y:%T %Z",
-    "%e/%m/%Y %H:%M",
-    "%e/%m/%Y",
-    "%e-%b-%y %r %Z",
-    "%e-%b-%y %I:%M %p %Z",
-    "%e-%b-%y %r",
-    "%e-%b-%y %I:%M %p",
-    "%e %b %y %r %Z",
-    "%e %b %y %I:%M %p %Z",
-    "%e %b %y %r",
-    "%e %b %y %I:%M %p",
-    "%e %b %r",
-    "%e %b %I:%M %p",
-    "%r %Z %e-%b-%y",
-    "%I:%M %p %Z %e-%b-%y",
-    "%r %e-%b-%y",
-    "%I:%M %p %e-%b-%y",
-    "%r %Z %e %b %y",
-    "%I:%M %p %Z %e %b %y",
-    "%r %e %b %y",
-    "%I:%M %p %e %b %y",
-    "%a, %e-%b-%y %r %Z",
-    "%a, %e-%b-%y %I:%M %p %Z",
-    "%a, %e-%b-%y %r",
-    "%a, %e-%b-%y %I:%M %p",
-    "%a, %e %b %y %r %Z",
-    "%a, %e %b %y %I:%M %p %Z",
-    "%a, %e %b %y %r",
-    "%a, %e %b %y %I:%M %p",
-    "%a, %b %e %r %Z %y",
-    "%a, %b %e %I:%M %p %Z %y",
-    "%a, %b %e %r %y",
-    "%a, %b %e %I:%M %p %y",
-    "%b %e %r",
-    "%b %e %I:%M %p",
-    "%e %b %Y %H:%M",
-    "%e %b %Y",
-    "%R",
-    "%r %p",
-    NULL
-  };
-
   if (*str == '@')
     return atol(str + 1);
 
+  extern long timezone;
   tzset();
-  for (; !strptime(str, formats[indx], &tm); indx++)
-    if (!formats[indx + 1])
-      dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
 
+  int indx = 0;
+  static struct tm tm; // static = bss = zeroed
+
+  while (!strptime(str, formats[indx], &tm) && formats[++indx])
+    ;
+
+  // ABANDON ALL HOPE; YE WHO ENTER HERE
+  // Initiliaze tm after this so we don't show stuff for the year 0 a.d.
+
+  if (!formats[indx]) {
+    time_t now = time(0);
+    struct tm *tmn = localtime(&now);
+    tm = *tmn;
+    indx = tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
+
+    while (!strptime(str, ifmts[indx], &tm))
+      if (!ifmts[++indx])
+        dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
+  }
+
+  // printf("%s", asctime(&tm));
   return mktime(&tm) - timezone;
 }

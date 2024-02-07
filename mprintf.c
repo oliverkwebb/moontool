@@ -20,7 +20,7 @@
 
 	John Walker
 	http://www.fourmilab.ch/
-       See LICENSE-Mprintf
+       See LICENSE
 */
 
 #include <math.h>
@@ -45,15 +45,22 @@ char *emojis_south[]= {"🌑", "🌘", "🌗", "🌖", "🌕",  "🌔", "🌓", 
 
 static long jdate(struct tm *t);
 
+// From Toybox: Orig Author Rob landley, lib/lib.c (millitime)
+static long microtime(void)
+{
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec*1000000+ts.tv_nsec/1000;
+}
+
 /* JTIME --    Convert internal GMT date and time to astronomical Julian time (i.e. Julian date plus day fraction). double jtime (struct tm *t) */
 #define jtime(t) ((jdate (t) - 0.5) + (t->tm_sec + 60 * (t->tm_min + 60 * t->tm_hour)) / 86400.0)
 
 // JDATE  --  Convert internal GMT date and time to Julian day and fraction.
 static long jdate (struct tm *t)
 {
-	long c, m, y;
+	long c, m, y = t->tm_year + 1900;
 
-	y = t->tm_year + 1900;
 	m = t->tm_mon + 1;
 	if (m > 2) m -= 3;
 	else { m += 9; y--; }
@@ -74,6 +81,7 @@ static int phaseindex (double ilumfrac, double mage)
 
 void mprintf(char *fmt, double ilumfrac, double mage, struct tm *time)
 {
+  // long then = microtime();
   int indx = phaseindex(ilumfrac, mage);
   for (size_t i = 0; i < strlen(fmt); i++) {
     if (fmt[i] != '%') putchar(fmt[i]);
@@ -83,20 +91,22 @@ void mprintf(char *fmt, double ilumfrac, double mage, struct tm *time)
       case 'n': putchar('\n'); break;
       case 't': putchar('\t'); break;
       case 'a': printf("%2.1f", mage); break;
-      case 'J': printf("%.1f", jtime(time)); break;
-      case 'e': printf("%s", emojis[indx]); break;
-      case 's': printf("%s", emojis_south[indx]); break;
-      case 'p': printf("%s", phasenames[indx]); break;
+      case 'J': printf("%f", jtime(time)); break;
+      case 'e': fputs(emojis[indx], stdout); break;
+      case 's': fputs(emojis_south[indx], stdout); break;
+      case 'p': fputs(phasenames[indx], stdout); break;
       case 'P': printf("%2.1f", ilumfrac*100); break;
       case 'N': printf("%d", indx); break;
       default : dprintf(2, "Unknown flag"); break;
     }
   }
   putchar('\n');
+  // printf("%ld\n", microtime()-then);
 }
 
 int main (int argc, char **argv)
 {
+  setvbuf(stdout, NULL, _IOFBF, 0);
   time_t now = time(0);
   char *fmtstr = "%p %e (%P%%)";
 
@@ -109,6 +119,7 @@ int main (int argc, char **argv)
     }
 
   struct tm *gm = gmtime(&now);
+  if (!gm) perror(argv[0]), exit(2);
   double cdtd = jtime(gm), ilfrac, moonage;
   phase (cdtd, &ilfrac, &moonage);
 
