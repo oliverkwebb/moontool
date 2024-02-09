@@ -45,14 +45,6 @@ char *emojis_south[]= {"🌑", "🌘", "🌗", "🌖", "🌕",  "🌔", "🌓", 
 
 static long jdate(struct tm *t);
 
-// From Toybox: Orig Author Rob landley, lib/lib.c (millitime)
-static long microtime(void)
-{
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec*1000000+ts.tv_nsec/1000;
-}
-
 /* JTIME --    Convert internal GMT date and time to astronomical Julian time (i.e. Julian date plus day fraction). double jtime (struct tm *t) */
 #define jtime(t) ((jdate (t) - 0.5) + (t->tm_sec + 60 * (t->tm_min + 60 * t->tm_hour)) / 86400.0)
 

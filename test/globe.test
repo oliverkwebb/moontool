@@ -1,0 +1,7 @@
+#!/bin/sh
+# Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
+. ./testing.sh
+# testing "name" "command" "result" "infile" "stdin"
+CMDNAME="globe" CMDPATH="./globe"
+
+testcmd "15-May-1985 14:00" "'15-May-1985 14:00:00' | cksum" "203338129 989\n" "" ""

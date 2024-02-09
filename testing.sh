@@ -29,11 +29,11 @@
 # The environment variable "FAILCOUNT" contains a cumulative total of the
 # number of failed tests.
 
-ECHO="echo -n"
-[ -n "$BASH" ] && ECHO="echo -ne"
+[ -n "$BASH" ] && shopt -s xpg_echo
 
 export FAILCOUNT=0
 : "${SHOWPASS:=PASS}" "${SHOWFAIL:=FAIL}" "${SHOWSKIP:=SKIP}" "${TESTDIR:=$(mktemp -d)}"
+[ "${TESTDIR#*tmp.}" != "${TESTDIR}" ] && trap "rm -rf $TESTDIR" 0
 if tty -s <&1
 then
   SHOWPASS="$(printf "\033[1;32m%s\033[0m" "$SHOWPASS")"
@@ -46,7 +46,7 @@ fi
 # Check if VERBOSE= contains a given string. (This allows combining.)
 verbose_has()
 {
-  [ "${VERBOSE#"$1"}" != "$VERBOSE" ]
+  [ "${VERBOSE#*"$1"}" != "$VERBOSE" ]
 }
 
 wrong_args()
@@ -97,9 +97,9 @@ testing()
     return 0
   fi
 
-  $ECHO "$3" > "$TESTDIR"/expected
-  [ -n "$4" ] && $ECHO "$4" > input || rm -f input
-  $ECHO "$5" | ${EVAL:-eval} "$2" > "$TESTDIR"/actual
+  echo -n "$3" > "$TESTDIR"/expected
+  [ -n "$4" ] && echo -n "$4" > "$TESTDIR"/input || rm -f "$TESTDIR"/input
+  echo -n "$5" | ${EVAL:-eval} "$2" > "$TESTDIR"/actual
   RETVAL=$?
 
   # Catch segfaults
@@ -109,13 +109,13 @@ testing()
   [ -z "$DIFF" ] && do_pass || VERBOSE=all do_fail
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }
   then
-    [ -n "$4" ] && printf "%s\n" "$ECHO \"$4\" > input"
-    printf "%s\n" "$ECHO '$5' |$EVAL $2"
+    [ -n "$4" ] && printf "%s\n" "echo -n \"$4\" > input"
+    printf "%s\n" "echo -n '$5' |$EVAL $2"
     [ -n "$DIFF" ] && printf "%s\n" "$DIFF"
   fi
 
   [ -n "$DIFF" ] && ! verbose_has all && exit 1
-  rm -f input ../expected ../actual
+  rm -f "$TESTDIR"/input "$TESTDIR/"expected "$TESTDIR"/actual
 
   [ -n "$DEBUG" ] && set +x
 

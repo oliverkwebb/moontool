@@ -2,7 +2,7 @@
 **
 ** ver  date   who remarks
 ** --- ------- --- -------------------------------------------------------------
-** 04A 02feb24 OW  Revision of the source code to be c99/POSIX2006
+** 04A 02feb24 OW  Revision of the source code to be c99/POSIX2008
 ** 03A 01apr95 JP  Updated to use date_parse.
 ** 02A 07jun88 JP  Changed the phase calculation to use code from John Walker's
 **                   "moontool", increasing accuracy tremendously.
@@ -151,13 +151,13 @@ static void putmoon(time_t t)
   }
 }
 
+extern long microtime(void);
+
 int main(int argc, char** argv)
 {
-  // long then = millitime();
   setvbuf(stdout, NULL, _IOFBF, 0); // Speedup: Buffer Stdout Fully
 
   if (argc > 2) dprintf(2, "usage: %s [<date/time>]\n", argv[0]), exit(1);
 
   putmoon((argc > 1) ? date_parse(argv[1]) : time(0));
-  // printf("%ld\n", millitime()-then);
 }

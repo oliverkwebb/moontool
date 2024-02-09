@@ -1,5 +1,4 @@
 // date_parse - parse string dates into internal form
-//
 // See LICENSE
 
 #include <stdio.h>
@@ -17,8 +16,10 @@ static char *formats[] = {
   "%d %b %Y %r",
   "%d %b %Y %T",
   "%d %b %Y %H:%M",
+  "%d %b %Y",
   // ctime(3) format - zonename
   "%a %b %d %T %Y",
+  "%a %b %d",
   NULL
 };
 
@@ -31,6 +32,8 @@ static char *ifmts[] = {
   NULL
 };
 
+extern time_t microtime();
+
 time_t date_parse(char *str)
 {
   if (*str == '@')
@@ -41,6 +44,21 @@ time_t date_parse(char *str)
 
   int indx = 0;
   static struct tm tm; // static = bss = zeroed
+
+  if ((*str == '+' || *str == '-') && (str[1] != '+' && str[1] != '-')) {
+    time_t now = time(0), epoch = 0;
+
+    tm = *gmtime(&epoch);
+
+    while (!strptime(str+1, ifmts[indx], &tm))
+      if (!ifmts[++indx])
+        dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
+
+    now += (*str == '+') ? (mktime(&tm) - timezone) : -(mktime(&tm) - timezone);
+
+    printf("%s", ctime(&now));
+    return now;
+  }
 
   while (!strptime(str, formats[indx], &tm) && formats[++indx])
     ;
@@ -57,6 +75,8 @@ time_t date_parse(char *str)
     while (!strptime(str, ifmts[indx], &tm))
       if (!ifmts[++indx])
         dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
+
+    return mktime(&tm);
   }
 
   // printf("%s", asctime(&tm));

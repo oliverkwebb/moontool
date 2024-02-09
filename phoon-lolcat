@@ -1,2 +1,2 @@
 #!/bin/sh
-exec phoon $1 | lolcat -r -h 0.45
+exec "${0%-lolcat}" $1 | lolcat -r -h 0.45
