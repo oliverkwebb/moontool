@@ -2,7 +2,7 @@
 // See LICENSE
 
 #include <stdio.h>
-#include <stdlib.h>
+extern int atol(const char *);
 #include <time.h>
 
 static char *formats[] = {
@@ -52,11 +52,10 @@ time_t date_parse(char *str)
 
     while (!strptime(str+1, ifmts[indx], &tm))
       if (!ifmts[++indx])
-        dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
+        return dprintf(2, "Unknown date format: `%s`\n", str);
 
     now += (*str == '+') ? (mktime(&tm) - timezone) : -(mktime(&tm) - timezone);
 
-    printf("%s", ctime(&now));
     return now;
   }
 
@@ -74,7 +73,7 @@ time_t date_parse(char *str)
 
     while (!strptime(str, ifmts[indx], &tm))
       if (!ifmts[++indx])
-        dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
+        return !dprintf(2, "Unknown date format: `%s`\n", str);
 
     return mktime(&tm);
   }

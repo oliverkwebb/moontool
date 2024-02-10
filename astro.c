@@ -65,7 +65,7 @@ jyear(double td, int *yy, int *mm, int *dd)
 
   td += 0.5; /* Astronomical to civil */
   j = floor(td);
-  j = j - 1721119.0;
+  j -= 1721119.0;
   y = floor(((4 * j) - 1) / 146097.0);
   j = (j * 4.0) - (1.0 + (146097.0 * y));
   d = floor(j / 4.0);

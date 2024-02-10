@@ -1,6 +1,7 @@
 syntax:glob
 mprintf
 phoon
+timecalc
 globe
 core
 *.o

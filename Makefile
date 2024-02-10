@@ -6,7 +6,7 @@ CFLAGS   = $(OPTFLAGS) $(STDFLAGS) $(WARNFLAGS) $(EXFLAGS)
 
 OBJDIR   = obj
 TESTDIR  = test
-APPS   = mprintf phoon globe
+APPS   = mprintf phoon globe timecalc
 COMMON = $(addprefix $(OBJDIR)/, astro.o date_parse.o)
 ifdef BENCH
 	COMMON := $(COMMON) $(OBJDIR)/bench.o
