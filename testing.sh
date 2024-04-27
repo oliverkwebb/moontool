@@ -3,7 +3,22 @@
 #
 # Copyright 2005 by Rob Landley
 
-# This file defines three main functions: "testing", "testcmd"
+# "How do I use this?"
+# Create a POSIX Shell script file, sourcing this one,
+# set CMDNAME and CMDPATH
+# run testcmd functions
+
+#A template:
+
+#!/bin/sh
+# Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
+#. ./testing.sh
+## testing "name" "command" "result" "infile" "stdin"
+#CMDNAME="cmd" CMDPATH="./cmd"
+# 
+#testcmd "display name" "command (autoprefixed with CMDPATH on testcmd)" "exected resault" "infile" "stdin"
+
+# This file defines 2 main functions: "testing", "testcmd"
 
 # The following environment variables enable optional behavior in "testing":
 #    DEBUG - Show every command run by test script.
@@ -29,7 +44,7 @@
 # The environment variable "FAILCOUNT" contains a cumulative total of the
 # number of failed tests.
 
-[ -n "$BASH" ] && shopt -s xpg_echo
+# [ -n "$BASH" ] && shopt -s xpg_echo
 
 export FAILCOUNT=0
 : "${SHOWPASS:=PASS}" "${SHOWFAIL:=FAIL}" "${SHOWSKIP:=SKIP}" "${TESTDIR:=$(mktemp -d)}"
@@ -44,13 +59,11 @@ fi
 # Helper functions
 
 # Check if VERBOSE= contains a given string. (This allows combining.)
-verbose_has()
-{
+verbose_has() {
   [ "${VERBOSE#*"$1"}" != "$VERBOSE" ]
 }
 
-wrong_args()
-{
+wrong_args() {
   if [ $# -ne 5 ]
   then
     printf "%s\n" "Test $NAME has the wrong number of arguments ($# $*)" >&2
@@ -61,14 +74,12 @@ wrong_args()
 }
 
 # Announce success
-do_pass()
-{
+do_pass() {
   verbose_has nopass || printf "%s\n" "$SHOWPASS: $NAME"
 }
 
 # Announce failure and handle fallout for txpect
-do_fail()
-{
+do_fail() {
   FAILCOUNT=$((FAILCOUNT+1))
   printf "%s\n" "$SHOWFAIL: $NAME"
   if [ -n "$CASE" ]
@@ -82,8 +93,7 @@ do_fail()
 # Functions test files call directly
 
 # Takes five arguments: "name" "command" "result" "infile" "stdin"
-testing()
-{
+testing() {
   wrong_args "$@" || { printf 'testing "name" "command" "result" "infile" "stdin"'; exit; }
 
   [ -z "$1" ] && NAME="$2" || NAME="$1"
@@ -123,9 +133,6 @@ testing()
 }
 
 # Wrapper for "testing", adds command name being tested to start of command line
-testcmd()
-{
-  wrong_args "$@"
-
+testcmd() {
   testing "${1:-$CMDNAME $2}" "$CMDPATH"" $2" "$3" "$4" "$5"
 }

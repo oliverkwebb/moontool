@@ -11,7 +11,7 @@
 ** 2. Redistributions in binary form must reproduce the above copyright
 **    notice, this list of conditions and the following disclaimer in the
 **    documentation and/or other materials provided with the distribution.
-** 
+**
 ** THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 ** ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 ** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,8 +29,6 @@
 #include <time.h>
 extern int atoi(char *nptr);
 extern int abs(int);
-
-#define OFFSET 43200
 
 static char *globes[30] = {
 "             ._o##HMP'\"\"\"&&Z##o_\n"
@@ -761,6 +759,7 @@ int main(int argc, char **argv)
 {
   setvbuf(stdout, 0, _IOFBF, 0);
   time_t now = (argc > 1) ? date_parse(argv[1]) : time(0);
+#define OFFSET 43200
   int indx = (now + OFFSET) % 86400 / (86400 / 30);
   puts(globes[abs(indx)]);
 }

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 extern int atol(const char *);
+extern void exit(int);
 #include <time.h>
 
 static char *formats[] = {
@@ -44,36 +45,37 @@ time_t date_parse(char *str)
 
   int indx = 0;
   static struct tm tm; // static = bss = zeroed
-
   if ((*str == '+' || *str == '-') && (str[1] != '+' && str[1] != '-')) {
-    time_t now = time(0), epoch = 0;
+    // Default initilization for gmtime at unix epoch
+    tm.tm_year = 70;
+    tm.tm_mday = 1;
+    tm.tm_wday = 4;
+    tm.tm_zone = "UTC"; // GMT on glibc, UTC on musl
 
-    tm = *gmtime(&epoch);
+    if (!strptime(str + 1, "%T", &tm) && 
+        !strptime(str + 1, "%H:%M", &tm) && 
+        (!strptime(str + 1, "%dd %H:%M", &tm) || !(++tm.tm_mday)))
+      dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
 
-    while (!strptime(str+1, ifmts[indx], &tm))
-      if (!ifmts[++indx])
-        return dprintf(2, "Unknown date format: `%s`\n", str);
+    time_t now = time(0);
+    now += (*str == '+') ? mktime(&tm) : -mktime(&tm);
 
-    now += (*str == '+') ? (mktime(&tm) - timezone) : -(mktime(&tm) - timezone);
-
-    return now;
+    return now - timezone;
   }
 
-  while (!strptime(str, formats[indx], &tm) && formats[++indx])
-    ;
+  while (!strptime(str, formats[indx], &tm) && formats[++indx]) ;
 
   // ABANDON ALL HOPE; YE WHO ENTER HERE
-  // Initiliaze tm after this so we don't show stuff for the year 0 a.d.
+  // Initiliaze tm after this so we don't show stuff for the year 1900.
 
   if (!formats[indx]) {
     time_t now = time(0);
-    struct tm *tmn = localtime(&now);
-    tm = *tmn;
+    tm = *localtime(&now);
     indx = tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
 
     while (!strptime(str, ifmts[indx], &tm))
       if (!ifmts[++indx])
-        return !dprintf(2, "Unknown date format: `%s`\n", str);
+        dprintf(2, "Unknown date format: `%s`\n", str), exit(2);
 
     return mktime(&tm);
   }
