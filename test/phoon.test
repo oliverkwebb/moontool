@@ -1,6 +1,6 @@
 #!/bin/sh
 # Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
-. ./testing.sh
+. ./test/testing.sh
 # testing "name" "command" "result" "infile" "stdin"
 CMDNAME="phoon" CMDPATH="./phoon"
 

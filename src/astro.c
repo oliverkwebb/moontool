@@ -1,28 +1,28 @@
-/* Adapted from "moontool.c" by John Walker, Release 2.5
-**
-** Quoting from the original:
-**
-**   The algorithms used in this program to calculate the positions Sun and
-**   Moon as seen from the Earth are given in the book "Practical Astronomy
-**   With  Your  Calculator"  by  Peter  Duffett-Smith,   Second   Edition,
-**   Cambridge University Press, 1981.  Ignore the word "Calculator" in the
-**   title;  this  is  an  essential  reference  if  you're  interested  in
-**   developing  software  which  calculates  planetary  positions, orbits,
-**   eclipses, and  the  like.   If  you're  interested  in  pursuing  such
-**   programming, you should also obtain:
-**
-**     "Astronomical  Formulae for Calculators" by Jean Meeus, Third Edition,
-**     Willmann-Bell, 1985.  A must-have.
-**
-**     "Planetary  Programs  and  Tables  from  -4000  to  +2800"  by  Pierre
-**     Bretagnon  and Jean-Louis Simon, Willmann-Bell, 1986.  If you want the
-**     utmost  (outside  of  JPL)  accuracy  for  the  planets,  it's   here.
-**
-**     "Celestial BASIC" by Eric Burgess, Revised Edition, Sybex, 1985.  Very
-**     cookbook oriented, and many of the algorithms are hard to dig  out  of
-**     the turgid BASIC code, but you'll probably want it anyway.
-**
-** See http://www.fourmilab.ch/moontool/
+/* Adapted from "moontool.c" by John Walker
+*
+* Quoting from the original:
+*
+*   The algorithms used in this program to calculate the positions Sun and
+*   Moon as seen from the Earth are given in the book "Practical Astronomy
+*   With  Your  Calculator"  by  Peter  Duffett-Smith,   Second   Edition,
+*   Cambridge University Press, 1981.  Ignore the word "Calculator" in the
+*   title;  this  is  an  essential  reference  if  you're  interested  in
+*   developing  software  which  calculates  planetary  positions, orbits,
+*   eclipses, and  the  like.   If  you're  interested  in  pursuing  such
+*   programming, you should also obtain:
+*
+*     "Astronomical  Formulae for Calculators" by Jean Meeus, Third Edition,
+*     Willmann-Bell, 1985.  A must-have.
+*
+*     "Planetary  Programs  and  Tables  from  -4000  to  +2800"  by  Pierre
+*     Bretagnon  and Jean-Louis Simon, Willmann-Bell, 1986.  If you want the
+*     utmost  (outside  of  JPL)  accuracy  for  the  planets,  it's   here.
+*
+*     "Celestial BASIC" by Eric Burgess, Revised Edition, Sybex, 1985.  Very
+*     cookbook oriented, and many of the algorithms are hard to dig  out  of
+*     the turgid BASIC code, but you'll probably want it anyway.
+*
+* See http://www.fourmilab.ch/moontool/
 */
 
 #include <math.h>

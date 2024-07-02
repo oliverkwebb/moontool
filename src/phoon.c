@@ -151,8 +151,6 @@ static void putmoon(time_t t)
   }
 }
 
-extern long microtime(void);
-
 int main(int argc, char** argv)
 {
   setvbuf(stdout, NULL, _IOFBF, 0); // Speedup: Buffer Stdout Fully

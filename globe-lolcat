@@ -1,2 +1,0 @@
-#!/bin/sh
-exec "${0%-lolcat}" $1 | lolcat -b -h 0.6

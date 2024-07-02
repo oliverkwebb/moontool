@@ -1,6 +1,6 @@
 #!/bin/sh
 # Toybox Test Suite, Fist Authored by Rob Landley for Toybox <https://www.landley.net/toybox>
-. ./testing.sh
+. ./test/testing.sh
 # testing "name" "command" "result" "infile" "stdin"
 CMDNAME="mprintf"
 CMDPATH="./mprintf"
@@ -10,10 +10,10 @@ testcmd "15/6/1981" '-t "15/6/1981 00:00"' "Waxing Gibbous 🌔 (93.6%)\n" "" ""
 testcmd "11/1/2024" '-t "11/1/2024 00:00"' "New 🌑 (0.4%)\n" "" ""
 testcmd "5/11/2061" '-t "5/11/2061 00:00"' "Waning Crescent 🌘 (44.2%)\n" "" ""
 
-testcmd "-f"    "-f asd" "asd\n" "" ""
-testcmd "-f %%" '-f "%%"' "%\n" "" ""
-testcmd "-f %P" '-t "1/11/2024 00:00" -f "%P"' "0.3\n" "" ""
-testcmd "-f %e" '-t "1/11/2024" -f "%e"' "🌑\n" "" ""
-testcmd "-f %s" '-t "4/2/2024 " -f "%s"' "🌒\n" "" ""
-testcmd "-f %s" '-t "11/1/2024" -f "%s"' "🌑\n" "" ""
-testcmd "-f %p" '-t "11/1/2024" -f "%p"' "New\n" "" ""
+testcmd "format"    "asd" "asd\n" "" ""
+testcmd "%%" '"%%"' "%\n" "" ""
+testcmd "%P" '-t "1/11/2024 00:00" "%P"' "0.3\n" "" ""
+testcmd "%e" '-t "1/11/2024" "%e"' "🌑\n" "" ""
+testcmd "%s" '-t "4/2/2024 " "%s"' "🌒\n" "" ""
+testcmd "%s" '-t "11/1/2024" "%s"' "🌑\n" "" ""
+testcmd "%p" '-t "11/1/2024" "%p"' "New\n" "" ""

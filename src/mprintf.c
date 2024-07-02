@@ -1,28 +1,3 @@
-/* A Moon for the Unix Machine, Release 3.0
-
- This is a program which displays the current phase of the Moon.
-
-    The algorithms used in this program to calculate the positions Sun and
-    Moon as seen from the Earth are given in the book "Practical Astronomy
-    With Your Calculator" by Peter Duffett-Smith, Second Edition,
-    Cambridge University Press, 1981. Ignore the word "Calculator" in the
-    title; this is an essential reference if you're interested in
-    developing software which calculates planetary positions, orbits,
-    eclipses, and the like. If you're interested in pursuing such
-    programming, you should also obtain:
-
-    "Astronomical Formulae for Calculators" by Jean Meeus 1985. A must-have.
-
-    "Planetary Programs and Tables from -4000 to +2800" by Pierre
-    Bretagnon and Jean-Louis Simon, Willmann-Bell, 1986.
-
-    This program was written by:
-
-	John Walker
-	http://www.fourmilab.ch/
-       See LICENSE
-*/
-
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -41,7 +16,13 @@ char *phasenames[]  = { "New", "Waxing Crescent", "First Quarter", "Waxing Gibbo
 char *emojis[]      = {"🌑", "🌒", "🌓", "🌔", "🌕",  "🌖", "🌗", "🌘"};
 char *emojis_south[]= {"🌑", "🌘", "🌗", "🌖", "🌕",  "🌔", "🌓", "🌒"};
 
-#define HELPTXT "mprintf [-h] [-t TIME] [-f FORMAT]"
+#define HELPTXT "mprintf [-h] [-t TIME] [FORMAT]\n"
+char *help = HELPTXT
+"-f formats:\n"
+"%a Moon Age\t %J Julian Day\n"
+"%e Emoji\t %s Emoji of phase (Southern Hemisphere)\n"
+"%p Phase Name\t %P Illuminated Percent\n"
+"%% Percent Sign\t %n Newline";
 
 static long jdate(struct tm *t);
 
@@ -100,15 +81,15 @@ int main (int argc, char **argv)
 {
   setvbuf(stdout, NULL, _IOFBF, 0);
   time_t now = time(0);
-  char *fmtstr = "%p %e (%P%%)";
 
   //Option parsing
-  for (int i = 0; (i = getopt (argc, argv, "ht:f:")) != -1; ) switch (i) {
-    case 'h': puts(HELPTXT); exit(1);
+  for (int i = 0; (i = getopt (argc, argv, "ht:")) != -1; ) switch (i) {
+    case 'h': puts(help); exit(1);
     case 't': now = date_parse(optarg); break;
-    case 'f': fmtstr = strdup(optarg); break;
     default: puts("Error: Unknown Option\n"HELPTXT); exit(1);
     }
+
+  char *fmtstr = argv[optind] ? : "%p %e (%P%%)";
 
   struct tm *gm = gmtime(&now);
   if (!gm) perror(argv[0]), exit(2);
