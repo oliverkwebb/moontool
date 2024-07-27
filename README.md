@@ -9,19 +9,20 @@ This one I actually wrote (although, heavily adapted from the original moontool
 code)
 
 -f formatting specifiers:
-
+```
 | character | definition                  | example         |
 |-----------+-----------------------------+-----------------|
 | %a        | Age (Days since new moon)   |           15.20 |
 | %e        | Emoji (Northern Hemisphere) | 🌘               |
 | %s        | Emoji (Southern Hemisphere) | 🌒               |
-| %J        | Julian Day                  | i2460494.401019 |
+| %J        | Julian Day                  | 2460494.401019  |
 | %N        | Phase Number                |               5 |
 | %P        | Illuminated Percent         | 10%             |
 | %p        | Phase name                  | New             |
 | %%        | percent sign                | %               |
 | %n        | Newline                     | \n              |
 | %t        | Tab                         | \t              |
+```
 
 ## phoon
 

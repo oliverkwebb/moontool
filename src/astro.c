@@ -303,3 +303,4 @@ double phase(double pdate, double *pphase, double *mage)
   *mage = synmonth * (fixangle(MoonAge) / 360.0);
   return fixangle(MoonAge) / 360.0;
 }
+
