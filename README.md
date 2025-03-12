@@ -1,12 +1,11 @@
 # Moontool - A modernization and adaptation of '80s astronomical trinkets
 
-The idea came from [this](https://www.fourmilab.ch/moontool/), and most
-of the astronomical code is from the original moontool
+The idea for this program came from [the original moontool by John Walker](https://www.fourmilab.ch/moontool/),
+and most of the astronomical code is from the original moontool.
 
 ## mprintf
 
-This one I actually wrote (although, heavily adapted from the original moontool
-code)
+A modular way to get information about the moon.
 
 -f formatting specifiers:
 ```
@@ -26,7 +25,7 @@ code)
 
 ## phoon
 
-[From Here](https://www.acme.com/software/phoon/) Originally Written by
+[From the original phoon](https://www.acme.com/software/phoon/) Originally Written by
 John Walker
 
 >>> phoon is a program to display the PHase of the mOON. Unlike other
@@ -36,10 +35,10 @@ in 1981; and now it's in C/Unix.
 
 ## globe
 
-[From Here](https://www.acme.com/software/Globe/) Originally Written by
+[From the original globe](https://www.acme.com/software/Globe/) Originally Written by
 John Walker
 
 ## timecalc
 
-A simple test of the date parsing stuff, practically a debug tool
+A simple test of date parsing, a debug tool
 
